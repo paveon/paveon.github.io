@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html class="" lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        
+        <title>Looper: A Worst-Case Cost Analyser</title>
+        <meta content="Looper: A Worst-Case Cost Analyser" property="twitter:title">
+        <meta content="Looper: A Worst-Case Cost Analyser" property="og:title">
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link href="https://fonts.googleapis.com/css?family=Quicksand&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Rubik&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Cairo&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="./highlighting.css">
+        <link rel="stylesheet" href="./stylesheet.css">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+    </head>
+    <body>
+        <div class="content" id="content-body">
+            <section>
+                <h1>Looper: A Worst-Case Cost Analyser</h1>
+            </section>
+
+            <section>
+                <h2>About</h2>
+                <p>
+                    <a href="https://github.com/paveon/looper"><b>Looper</b></a> is 
+                    a&nbsp;<a href="https://fbinfer.com/"><b>Facebook Infer</b></a>
+                    analyser plugin focusing on performance analysis of C/C++
+                    programs. Looper computes a&nbsp;sound symbolic 
+                    upper-bound estimate on the number of iterations for each
+                    program loop and supports <i>amortized complexity</i>
+                    analysis. This allows Looper to compute a&nbsp;single
+                    symbolic upper-bound on the complexity (which stems
+                    from execution of loops in a&nbsp;program) of each
+                    individual function/method in terms of its parameters.
+                </p>
+
+                <p>
+                    The following example demonstrates the current capabilities
+                    of our analyser to perform amortised complexity analysis:
+                </p>
+                <pre><code class="c">void xnu(unsigned len) {
+    int beg = 0;
+    int end = 0;
+    int i = 0;
+    while(i &lt; len) {
+        i++;
+        if (?)
+            end = i;
+        if (?) {
+            int k = beg;
+            while (k &lt; end) {
+                k++;
+            }
+            end = i;
+            beg = end;
+        } 
+        else if(?) {
+            end = i;
+            beg = end;
+        }
+    }
+}</code></pre>
+            <p>Our analyser is able to infer the precise bound of <code class=inline>2*len</code>.</p>
+
+            <h4>Background:</h4>
+            <p>
+                Looper is based on an existing intra-procedural tool for automated
+                complexity analysis for imperative programs called 
+                <a href="https://forsyte.at/software/loopus/page/11/"><b>Loopus</b></a>.
+                The original tool developed new algorithms for complexity
+                analysis based on the so-called <i>difference constraint program</i> (DCP)
+                abstraction, which is able to model <i>amortized complexity</i>
+                problems naturally. Our analyser plugin re-implements the core
+                algorithms of Loopus and strives for a&nbsp;more scalable, incremental
+                and <i>soon-to-be</i> <b>inter-procedural</b> analysis with the help of
+                the Facebook Infer framework.
+            </p>
+            <p>
+                More details regarding the DCP abstraction and the core algorithms of Loopus
+                can be found in the <a href="#related_papers"><b>Related papers</b></a> section.
+            </p>
+
+            <h4>Work In Progress:</h4>
+            <p>
+                    Our analyser plugin re-implements the core algorithms of Loopus within the Facebook Infer framework. 
+                    Though Looper is not yet inter-procedural, it is conceived to be inter-procedural, allowing for more
+                    scalable and incremental analysis as is usual in Infer. The first inter-procedural version is to appear soon.
+            </p>
+            </section>
+
+            <section>
+                <h2>Installation</h2>
+                <p><a href="https://github.com/paveon/looper/blob/looper-develop/INSTALL.md">
+                    <b>INSTALL.md</b>
+                </a> - all the information necessary to get Infer (including <a href="https://github.com/paveon/looper"><b>Looper</b></a>) up and running.</p>
+            </section>
+
+            <section>
+                <h2>Usage</h2>
+                <p>Use <code class="inline">infer</code> or <code class="inline">infer --looper-only</code>
+                    (to run only <b>Looper</b>) to analyse the input C/C++ programs and output the
+                    symbolic total cost estimate to the standard output. For more information on how
+                    to use Infer, please use <code class="inline">infer --help</code> or refer to the
+                    <a href="https://fbinfer.com/"><b>Facebook Infer</b></a> website.</p>
+
+                <h4>Usage example:</h4>
+                <ul>
+                    <li><code class="inline">infer --looper-only -- gcc -c main.c</code></li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Contact</h2>
+                <p>If you have any questions, do not hesitate to contact the tool/method authors:</p>
+                <ul>
+                    <li><b>Ondřej Pavela</b> &lt;<a href="mailto:xpavel34@stud.fit.vutbr.cz">xpavel34@stud.fit.vutbr.cz</a>&gt;</li>
+                    <li><b><a href="http://www.fit.vutbr.cz/~vojnar/">Tomáš Vojnar</a></b> &lt;<a href="mailto:vojnar@fit.vutbr.cz">vojnar@fit.vutbr.cz</a>&gt;</li>
+                    <li><b><a href="https://www.fit.vutbr.cz/~rogalew/">Adam Rogalewicz</a></b> &lt;<a href="mailto:rogalew@fit.vutbr.cz">rogalew@fit.vutbr.cz</a>&gt;</li>
+                    <li><b><a href="http://www.fit.vutbr.cz/~ifiedortom/">Tomáš Fiedor</a></b> &lt;<a href="mailto:ifiedortom@fit.vutbr.cz">ifiedortom@fit.vutbr.cz</a>&gt;</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2 id="related_papers">Related Papers</h2>
+                <ol>                        
+                    <li>PAVELA, Ondřej. 
+                        <a href="https://dspace.vutbr.cz/bitstream/handle/11012/180232/21919.pdf?sequence=1&isAllowed=y">
+                            Static Analysis Using Facebook Infer Focused on Performance Analysis
+                        </a>.
+                            Brno, 2019. Bachelor’s thesis. Brno University of Technology, Faculty of Information
+                            Technology. Supervisor Doc. Mgr. Adam Rogalewicz, Ph.D.
+                    </li>
+
+                    <li>Harmim, D.; Marcin, V.; Ondřej, P.: 
+                        <a href="http://excel.fit.vutbr.cz/submissions/2019/059/59.pdf">Scalable Static Analysis Using Facebook Infer</a>. 
+                        In Proc. of Excel@FIT’19. Brno, Czech Republic. 2019.
+                    </li>
+
+                    <li>
+                        SINN, Moritz: <a href="https://publik.tuwien.ac.at/files/publik_257756.pdf">
+                            Automated Complexity Analysis for Imperative Programs
+                        </a>. 
+                        PhD. Thesis. Vienna University of Technology. 2016.
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                    <h2 id="license">License</h2>
+                    <p>Looper is <a href="https://github.com/paveon/looper/blob/looper-develop/LICENSE">MIT-licensed</a>.</p>
+            </section>
+        </div>
+    </body>
+</html>
+  
